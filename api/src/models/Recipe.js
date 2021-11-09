@@ -4,7 +4,7 @@ const { DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
   // defino el modelo
   sequelize.define('recipe', {
-    id: {
+    /* id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       allowNull: false,
@@ -15,6 +15,12 @@ module.exports = (sequelize) => {
       set(value){
         this.setDataValue('id', value.slice(1) * 1)
       }
+    }, */
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+      primaryKey: true
     },
     name: {
       type: DataTypes.STRING,
