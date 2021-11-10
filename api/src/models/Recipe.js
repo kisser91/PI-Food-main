@@ -31,13 +31,16 @@ module.exports = (sequelize) => {
       allowNull: false
     },
     points: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
     },
     healthScore: {
-      type: DataTypes.STRING
+      type: DataTypes.INTEGER
     },
     steps: {
       type: DataTypes.TEXT
     },
+    diets: {
+      type: DataTypes.ARRAY(DataTypes.STRING)
+    }
   }, {timestamps: false} );
 };
