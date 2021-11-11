@@ -17,15 +17,41 @@ router.get(`/recipes`, async function(req, res){
   try{
   const {name} = req.query;
 
-  const list = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?query=${name}
-  &addRecipeInformation=true&apiKey=${API_KEY}`)
-  
-  list ? res.send(list.data) : res.status(401).send("Recipe not found")
-}
+  let getApiCall = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?query=${name}
+  &addRecipeInformation=true&apiKey=${API_KEY}`);
+  let array = (Object.values(getApiCall.data.results));
+  let foodArray = await Promise.all(array.map(async (el) => {
+    /* en dietsArray tengo [ 'vegetarian', false ],
+  [ 'vegan', false ],
+  [ 'glutenFree', false ] */
+  let diets = [];
+  let dietsArray = Object.entries(el).splice(0, 3).map(el=> {
+      if (el[1]) diets.push(el[0])
+    })
+      return {
+      name: el.title,
+      summary: el.summary,
+      points: el.spoonacularScore,
+      healthScore: el.healthScore,
+      steps: el.analyzedInstructions,
+      diets: diets
+  }}))
+
+  let getDbInfo = async () => {
+    return await Recipe.findAll()
+  }
+    const getAll = async () => {
+    let apiInfo = foodArray;
+    let dbInfo = getDbInfo();
+    const info = apiInfo.concat(dbInfo);
+     info ? res.json(info) : res.status(401).send("Recipe not found")
+  }
+  getAll();
+ }
 catch(error) {
   res.status(404).send(error)
 }
-  });
+});
 //---------------------------------------------------------------------------------------
   router.get(`/recipes/:id`, async function(req, res){
   try {
@@ -37,6 +63,23 @@ catch(error) {
     res.status(404).send(error)
   }
  });
+ /* router.get("/pokemons/:id", async(req,res)=> {
+    const id = parseInt(req.params.id); 
+    console.log(id);
+    let pokemonsAll = await getAll();
+    console.log(pokemonsAll);
+
+    if(id){
+        let pokemonId = pokemonsAll.filter(el => el.id === id)
+        pokemonId
+        ? res.status(200).send(pokemonId) 
+        : res.status(404).send('El pokemon solicitado no existe.');
+    
+    }
+    else {
+        res.status(200).send(pokemonsAll);
+    }
+}); */
 //---------------------------------------------------------------------------------------
   router.get(`/types`, async function(req, res){
      try{  
@@ -66,16 +109,20 @@ catch(error) {
 //---------------------------------------------------------------------------------------
 router.post('/recipe', async function(req, res){
    try {
-      const {name, summary, points, healthScore, steps, diets} = req.body;
+      const {name, summary, points, healthScore, steps, createdInDb, diets} = req.body;
      
-      await Recipe.create({
+     let recipeCreated = await Recipe.create({
           name,
           summary,
           points,
           healthScore,
           steps,
-          diets
+          createdInDb
       })
+      let dietTypesDb = await Diet_Type.findAll({
+        where: {name : diets}
+      })
+      recipeCreated.addDiet_Type(dietTypesDb)
       res.send(`Recipe "${name}" successfully created.`)
     }
   catch(error){
