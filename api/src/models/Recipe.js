@@ -39,6 +39,9 @@ module.exports = (sequelize) => {
     steps: {
       type: DataTypes.TEXT
     },
+    image: {
+      type: DataTypes.STRING
+    },
     createdInDb: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

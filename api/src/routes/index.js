@@ -1,11 +1,11 @@
 const {Router} = require('express');
 const axios = require('axios');
-const { Recipe, Diet_Type } = require('../db.js');
+const { Recipe, Diets } = require('../db.js');
 const {Op, INTEGER, UUID} = require("sequelize");
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
 const {
-  API_KEY
+  API_KEY, SECAPI_KEY, TERAPI_KEY, CUARAPI_KEY, QUINAPI_KEY
 } = process.env;
 
 const router = Router();
@@ -17,12 +17,11 @@ router.get(`/recipes`, async function(req, res){
   try{
   const {title} = req.query;
  
-  let getApiCall = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?query=${title}
-  &addRecipeInformation=true&apiKey=${API_KEY}`);
+  let getApiCall = await axios.get(`https://api.spoonacular.com/recipes/complexSearch?query=${title || ""}&number=100&addRecipeInformation=true&apiKey=${CUARAPI_KEY}`);
   //me quedo con los datos brutos en un array
-  let array = (Object.values(getApiCall.data.results));
+  let apiData= getApiCall.data.results
   //me quedo solo con la informacion que necesito
-  let receta = await Promise.all(array.map(async (el) => {
+  let receta = apiData.map(el => {
       return {
       diets: el.diets,
       title: el.title,
@@ -30,18 +29,28 @@ router.get(`/recipes`, async function(req, res){
       points: el.spoonacularScore,
       healthScore: el.healthScore,
       steps: el.analyzedInstructions,
-  }}))
+      image: el.image
+  }})
   let getDbInfo = async () => {
+    if(title) {
+      return await Recipe.findAll({
+        where: {
+          title: {
+            [Op.iLike] : `%${title}%`
+    }}, include: {
+      model: Diets,
+      attributes: ["title"],
+      through: {attributes: []}
+    } 
+  })}
+  else {
     return await Recipe.findAll({
-      where: {
-        title: {
-          [Op.iLike] : `%${title}%`
-  }}, include: {
-    model: Diet_Type,
-    attributes: ["id", "name"],
-    through: {attributes: []}
+      include: { model: Diets,
+        attributes: ["title"],
+        through: {attributes: []}}
+    })
   }
-})}
+}
     const getAll = async () => {
     let apiInfo = receta;
     let dbInfo = await getDbInfo();
@@ -60,7 +69,7 @@ catch(error) {
     const {id} = req.params;
     try {
       if (id.length < 20) {
-      let getApiCall =  await axios.get(`https://api.spoonacular.com/recipes/${id}/information?apiKey=${API_KEY}`);
+      let getApiCall =  await axios.get(`https://api.spoonacular.com/recipes/${id}/information?apiKey=${CUARAPI_KEY}`);
       let apiInfo = getApiCall.data
       let receta = {
         diets: apiInfo.diets,
@@ -69,6 +78,7 @@ catch(error) {
         points: apiInfo.spoonacularScore,
         healthScore: apiInfo.healthScore,
         steps: apiInfo.analyzedInstructions,
+        image: el.image
         }
       res.json(receta)
     } 
@@ -79,7 +89,7 @@ catch(error) {
         }, 
         include: {
         model: Diet_Type,
-        attributes: ["id", "name"],
+        attributes: ["id", "title"],
         through: {attributes: []}
         }})
       res.json(dbInfo)
@@ -92,20 +102,20 @@ catch(error) {
  //---------------------------------------------------------------------------------------
   router.get(`/types`, async function(req, res){
      try{  
-          const types = await Diet_Type.findAll()
+          const types = await Diets.findAll()
           if (types.length === 0) {
-            const types = await Diet_Type.bulkCreate([
-              {name : "Gluten Free"},
-              {name : "Ketogenic"},
-              {name : "Vegetarian"},
-              {name : "Lacto-Vegetarian"},
-              {name : "Ovo-Vegetarian"},
-              {name : "Vegan"},
-              {name : "Pescetarian"},
-              {name : "Paleo"},
-              {name : "Primal"},
-              {name : "Low FODMAP"},
-              {name : "Whole30"},
+            const types = await Diets.bulkCreate([
+              {title : "Gluten Free"},
+              {title : "Ketogenic"},
+              {title : "Vegetarian"},
+              {title : "Lacto-Vegetarian"},
+              {title : "Ovo-Vegetarian"},
+              {title : "Vegan"},
+              {title : "Pescetarian"},
+              {title : "Paleo"},
+              {title : "Primal"},
+              {title : "Low FODMAP"},
+              {title : "Whole30"},
           ]);
           res.json(types)
           }
@@ -118,7 +128,7 @@ catch(error) {
 //---------------------------------------------------------------------------------------
 router.post('/recipe', async function(req, res){
    try {
-      const {title, summary, points, healthScore, steps, createdInDb, diets} = req.body;
+      const {title, summary, points, healthScore, steps, image, createdInDb, diets} = req.body;
      
      let recipeCreated = await Recipe.create({
           title,
@@ -126,12 +136,13 @@ router.post('/recipe', async function(req, res){
           points,
           healthScore,
           steps,
+          image,
           createdInDb
       })
-      let dietTypesDb = await Diet_Type.findAll({
-        where: {name : diets}
+      let dietTypesDb = await Diets.findAll({
+        where: {title : diets}
       })
-      recipeCreated.addDiet_Type(dietTypesDb)
+      recipeCreated.addDiets(dietTypesDb)
       res.send(`Recipe "${title}" successfully created.`)
     }
   catch(error){

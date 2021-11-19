@@ -1,17 +1,24 @@
-const {GET_ALL, GET_ALL_BY_NAME, GET_BY_ID, GET_TYPES,POST_RECIPE} = require("../actions/constants.js");
+import {GET_ALL, GET_ALL_BY_TITLE, GET_BY_ID, GET_TYPES,POST_RECIPE} from"../actions/constants.js";
 
 const initialState = {
-    Recepies: [],
-    DietTypes: [],
-    loading: false
-  };
+    recipes: [],
+    dietTypes: [],
+};
   
   function rootReducer(state = initialState, action) {
     switch(action.type) {
       case GET_ALL: return {
         ...state,
-        Recepies: action.payload
+        recipes: action.payload
       };
+      case GET_ALL_BY_TITLE: return {
+        ...state,
+        recipes: action.payload
+      };
+      case GET_TYPES: return {
+        ...state,
+        dietTypes: action.payload
+      }
       /* case "ADD_MOVIE_FAVORITE": return {
           ...state,
           moviesFavourites: state.moviesFavourites.concat(action.payload)
