@@ -2,7 +2,7 @@ import React,{ useState, useEffect } from 'react';
 import Card from '../Card/Card.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllByTitle } from '../../actions/index.js'; 
-
+import { NavLink } from 'react-router-dom';
 
 export default function Cards() {
   const recipes = useSelector((state) => state.recipes);
@@ -14,7 +14,7 @@ export default function Cards() {
   
      const filteredRecipes = () => {
       if (searchSubmit.length === 0) {
-        return recipes.slice(currentPage, currentPage + 9)
+        return (recipes.length) && recipes.slice(currentPage, currentPage + 9)
       }
     else{
       dispatch(getAllByTitle(searchSubmit));
@@ -73,14 +73,14 @@ export default function Cards() {
             return aux.join(", ");
            } 
         }
-               
-      return (<Card 
+             
+      return (<NavLink to={`/recipe/${r.id}`}> <Card 
           key={r.id}
           title={r.title}
           image={r.image}
           diets={dietsArray()}
           id={r.id}
-        /> )}): <p>Loading...</p>}
+        /></NavLink>)}): <p>Loading...</p>}
       </div>
   );
 }

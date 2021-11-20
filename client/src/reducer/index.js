@@ -3,6 +3,7 @@ import {GET_ALL, GET_ALL_BY_TITLE, GET_SORTED, GET_BY_ID, GET_TYPES,POST_RECIPE}
 const initialState = {
     recipes: [],
     allRecipes: [],
+    recipeById: [],
     dietTypes: [],
 };
 
@@ -20,6 +21,14 @@ const initialState = {
         ...state,
         dietTypes: action.payload
       };
+      case GET_BY_ID : return {
+        ...state,
+        recipeById: action.payload
+      };
+      case POST_RECIPE : return {
+        ...state,
+      };
+
       case GET_SORTED: 
       
       function sorter(payload) {
@@ -33,7 +42,7 @@ const initialState = {
         else {
           sortedRecipes = state.allRecipes;
         }
-         //case of order type Score or Alphabetical y los ordeno ascendente o desc
+         //case of order type Score or Alphabetical with a condicional returning, making two sorts in one (increasing or decreasing)
          if (payload.type === "Score") { 
            sortedRecipes = sortedRecipes.sort((a, b) => {
           if (a.points > b.points) {
@@ -59,24 +68,13 @@ const initialState = {
           return {
         ...state,
         recipes: sorter(action.payload)
-      }
-      /* case "ADD_MOVIE_FAVORITE": return {
-          ...state,
-          moviesFavourites: state.moviesFavourites.concat(action.payload)
-        }
-        case "GET_MOVIE_DETAIL" : return {
-            ...state,
-            movieDetail: action.payload,
-            loading: false
-          };
-        case "REMOVE_MOVIE_FAVORITE" : return {
-            ...state,
-            moviesFavourites: state.moviesFavourites.filter(elemento => elemento.id !== action.payload)
-          };
-        case 'GET_POST': return {
+      };
+
+    
+       /*  case 'GET_POST': return {
           ...state,
           loading: true
-        } */
+        }  */
         
         default: return state;
     }

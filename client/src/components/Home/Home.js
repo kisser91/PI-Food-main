@@ -60,7 +60,7 @@ function handleSubmit(event){
           </select>
           <select  name="diets" onChange={e => dietsChange(e)}>
           <option value="All">All</option>{
-            dietTypes.map(el => {return <option value={el.title}>{el.title}</option>})
+            dietTypes && dietTypes.map(el => {return <option value={el.title}>{el.title}</option>})
           }
           </select>
           <button type="submit" onClick={event => {handleSubmit(event)}}>Reload</button>
