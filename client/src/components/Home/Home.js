@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import { getAll, getTypes } from '../../actions/index.js';
+import { getAll, getTypes, getSorted } from '../../actions/index.js';
 import Cards from "../Cards/Cards.js";
 
 
 
 export default function Home() {
 const dispatch = useDispatch();
+const allRecipes = useSelector((state) => state.allRecipes);
+const dietTypes = useSelector((state) => state.dietTypes);
+const [order, setOrder] = useState("Increasing");
+const [type, setType] = useState("Alphabetical");
+const [diets, setDiets] = useState("All");
+
   useEffect(()=>{
     dispatch(getAll());
     dispatch(getTypes())
-},[dispatch]);
+},[]);
 
-const dietTypes = useSelector((state) => state.dietTypes);
-const [order, setOrder] = useState("");
-const [type, setType] = useState("");
-const [diets, setDiets] = useState("");
+useEffect(()=>{
+ (allRecipes.length) && dispatch(getSorted({
+  order,
+  type,
+  diets
+}))
+},[allRecipes]);
 
 const orderChange = (e) => {
   e.preventDefault();
@@ -29,6 +38,14 @@ const dietsChange = (e) => {
   e.preventDefault();
   setDiets(e.target.value);
 }
+function handleSubmit(event){
+  event.preventDefault();
+  dispatch(getSorted({
+    order,
+    type,
+    diets
+  }))
+}
 
   return (
   <div>
@@ -41,17 +58,14 @@ const dietsChange = (e) => {
              <option value="Alphabetical">Alphabetical</option>
              <option value="Score">Score</option>
           </select>
-          <select  name="diets" onChange={e => dietsChange(e)}>{
+          <select  name="diets" onChange={e => dietsChange(e)}>
+          <option value="All">All</option>{
             dietTypes.map(el => {return <option value={el.title}>{el.title}</option>})
           }
           </select>
-
-
-    </div>
-       <div>
-        <Cards/>
-        </div>
-    
+          <button type="submit" onClick={event => {handleSubmit(event)}}>Reload</button>
+ </div>
+   <Cards/>
   </div>
 );
 }

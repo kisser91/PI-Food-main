@@ -1,4 +1,4 @@
-import React,{ useState } from 'react';
+import React,{ useState, useEffect } from 'react';
 import Card from '../Card/Card.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllByTitle } from '../../actions/index.js'; 
@@ -11,8 +11,8 @@ export default function Cards() {
   const [currentPage, setCurrentPage] = useState(0);
   const [actualPage, setActualPage] = useState(0);
   const dispatch = useDispatch();
-
-    const filteredRecipes = () => {
+  
+     const filteredRecipes = () => {
       if (searchSubmit.length === 0) {
         return recipes.slice(currentPage, currentPage + 9)
       }

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {GET_ALL, GET_ALL_BY_TITLE, GET_TYPES} from"./constants";
+import {GET_ALL, GET_ALL_BY_TITLE, GET_TYPES, GET_SORTED} from"./constants";
+import { useSelector } from 'react-redux';
 
 export function getAll() {
       return async function(dispatch) {
@@ -22,6 +23,13 @@ export function getTypes() {
   return dispatch({type: GET_TYPES, payload: apiInfo})
 }
 }
+//i will recive an objet with all the orden forms of my local states(HOME) in payload
+export function getSorted(payload) {
+  return  function(dispatch) {
+   return dispatch({type: GET_SORTED, payload})
+}
+}
+
 
   /* export function getMovieDetail(id) {
     return function(dispatch) {
